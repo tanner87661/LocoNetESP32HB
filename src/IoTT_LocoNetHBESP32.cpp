@@ -31,14 +31,17 @@ cbFct lnCallback = NULL;
 
 LocoNetESPSerial::LocoNetESPSerial(int receivePin, int transmitPin, bool inverse_logic, int uartNr, unsigned int buffSize) : HardwareSerial(uartNr) 
 {
-   m_invert = inverse_logic;
-   m_rxPin = receivePin;
-   m_txPin = transmitPin;
-   m_StartCD = micros();
-   que_rdPos = que_wrPos = 0;
-   receiveMode = true;
-   transmitStatus = 0;
-   begin();
+	m_invert = inverse_logic;
+	m_rxPin = receivePin;
+	m_txPin = transmitPin;
+	m_StartCD = micros();
+	que_rdPos = que_wrPos = 0;
+	receiveMode = true;
+	transmitStatus = 0;
+	m_uart = uartNr;
+	m_buffsize = buffSize;
+	if ((m_rxPin >= 0) || (m_txPin >= 0))
+		begin();
  }
 
 LocoNetESPSerial::~LocoNetESPSerial() {
@@ -48,11 +51,24 @@ LocoNetESPSerial::~LocoNetESPSerial() {
 
 void LocoNetESPSerial::begin() {
 
-   HardwareSerial::begin(16667, SERIAL_8N1, m_rxPin, -1, m_invert);
-   m_highSpeed = true;
-   m_bitTime = 60; //round(1000000 / 16667); //60 uSecs
-   pinMode(m_rxPin, INPUT_PULLUP); //needed to set this when using Software Serial. Seems to work here
-   hybrid_begin(m_rxPin, m_txPin, m_invert);
+	HardwareSerial::begin(16667, SERIAL_8N1, m_rxPin, -1, m_invert);
+	m_highSpeed = true;
+	m_bitTime = 60; //round(1000000 / 16667); //60 uSecs
+	pinMode(m_rxPin, INPUT_PULLUP); //needed to set this when using Software Serial. Seems to work here
+	hybrid_begin(m_rxPin, m_txPin, m_invert);
+}
+
+void LocoNetESPSerial::loadLNCfgJSON(DynamicJsonDocument doc)
+{
+	if (doc.containsKey("pinRx"))
+		m_rxPin = doc["pinRx"];
+	if (doc.containsKey("pinTx"))
+		m_txPin = doc["pinTx"];
+	if (doc.containsKey("invLogic"))
+		m_invert = doc["invLogic"];
+	if (doc.containsKey("buffsize"))
+		m_buffsize = doc["buffsize"];
+	begin();
 }
 
 uint16_t LocoNetESPSerial::lnWriteMsg(lnTransmitMsg txData)
@@ -68,7 +84,10 @@ uint16_t LocoNetESPSerial::lnWriteMsg(lnTransmitMsg txData)
 		return txData.lnMsgSize;
 	}
 	else
+	{	
+		Serial.println("LocoNet Write Error. Too many messages in queue");
 		return -1;
+	}
 }
 
 uint16_t LocoNetESPSerial::lnWriteMsg(lnReceiveBuffer txData)
@@ -84,7 +103,10 @@ uint16_t LocoNetESPSerial::lnWriteMsg(lnReceiveBuffer txData)
 		return txData.lnMsgSize;
 	}
 	else
+	{	
+		Serial.println("LocoNet Write Error. Too many messages in queue");
 		return -1;
+	}
 }
 
 void LocoNetESPSerial::setLNCallback(cbFct newCB)
