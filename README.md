@@ -5,10 +5,6 @@ including active WiFi, which results in deviations of timer intervals. Transmitt
 The library takes care of that internally, so from the application side messages are guaranteed to be sent out as long as LocoNet is active, even thought the callback function will notify the application about
 any errors on the LocoNet side, they basically can be ignored.
 
-Check these YoutTube videos for more information:
-https://youtu.be/lZNPnBSq9Ik
-https://youtu.be/CQ_i9IjvNpc
-
 Installation
 
 Download the ZIP file and install it using the normal Arduino IDE installation procedure

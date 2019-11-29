@@ -30,6 +30,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <IoTTCommDef.h>
 #include <IoTT_LocoNetHybrid.h>
 #include <HardwareSerial.h>
+#include <ArduinoJson.h>
 
 
 // This class is compatible with the corresponding AVR one,
@@ -49,16 +50,17 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 class LocoNetESPSerial : public HardwareSerial
 {
 public:
-   LocoNetESPSerial(int receivePin, int transmitPin, bool inverse_logic = true, int uartNr = 2, unsigned int buffSize = 64);
-   ~LocoNetESPSerial();
-   void begin();
-   void processLoop();
-   void setBusyLED(int8_t ledNr);
-   uint16_t lnWriteMsg(lnTransmitMsg txData);
-   uint16_t lnWriteMsg(lnReceiveBuffer txData);
-   void setLNCallback(cbFct newCB);
-   int cdBackoff();
-   bool carrierOK();
+	LocoNetESPSerial(int receivePin, int transmitPin, bool inverse_logic = true, int uartNr = 2, unsigned int buffSize = 64);
+	~LocoNetESPSerial();
+	void begin();
+	void processLoop();
+	void setBusyLED(int8_t ledNr);
+	uint16_t lnWriteMsg(lnTransmitMsg txData);
+	uint16_t lnWriteMsg(lnReceiveBuffer txData);
+	void setLNCallback(cbFct newCB);
+	int cdBackoff();
+	bool carrierOK();
+	void loadLNCfgJSON(DynamicJsonDocument doc);
    
 private:
    
@@ -77,7 +79,9 @@ private:
    uint8_t que_rdPos, que_wrPos;
    lnReceiveBuffer lnInBuffer, lnEchoBuffer;
    int m_rxPin, m_txPin;
-   bool m_invert;
+   bool m_invert = true;
+   uint8_t m_uart = 2;
+   uint8_t m_buffsize = 64;
    bool receiveMode;
    int8_t busyLED = -1;
    uint8_t m_bitTime = 60;
